@@ -2,14 +2,15 @@ import pygame
 from pygame.locals import *
 from OpenGL.GLU import *
 from OpenGL.GL import *
+import numpy
 
-vertices=(
-    (1, -1, -1),
-    (1, 1, -1),
-    (-1, 1, -1),
-    (-1, -1, -1),
-    (0, 0, 1)
-    )
+vertices = [
+    [1, -1, -1],
+    [1, 1, -1],
+    [-1, 1, -1],
+    [-1, -1, -1],
+    [0, 0, 1]
+    ]
 
 edges = (
     (0, 1),
@@ -25,13 +26,14 @@ edges = (
 
 class Render3DObejct(object):
     linewidth = 10
-    lines = GL_LINES
+    lines = GL_QUADS
     vertices = None
     color = (0, 0, 1)
     edges = None
 
-    def __init__(self, listvertex, listedges):
-        self.vertices, self.edges = listvertex, listedges
+    def __init__(self, listvertex, listedges, mul=1):
+        self.edges = listedges
+        self.vertices = list(numpy.multiply(numpy.array(listvertex), mul))
         self.draw()
 
     def draw(self):
@@ -43,6 +45,9 @@ class Render3DObejct(object):
                 glColor3f(self.color[0], self.color[1], self.color[2])
         glEnd()
 
+    def move(self, x, y, z):
+        self.vertices = list(map(lambda vert: (vert[0] + x, vert[1] + y, vert[2] + z), self.vertices))
+
     def set_linewidth(self, width):
         self.linewidth = width
 
@@ -53,7 +58,7 @@ class Render3DObejct(object):
         self.color = rgb
 
     def set_newobject(self, listvert, listedge):
-        if listvert and listedge is (list or []):
+        if listvert and listedge:
             self.vertices = listvert
             self.edges = listedge
 
@@ -93,17 +98,17 @@ def main():
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
-            glTranslatef(0, speed, 0)
+            obj.move(0, speed, 0)
         elif keys[pygame.K_DOWN]:
-            glTranslatef(0, -speed, 0)
+            obj.move(0, -speed, 0)
         elif keys[pygame.K_RIGHT]:
-            glTranslatef(speed, 0, 0)
+            obj.move(speed, 0, 0)
         elif keys[pygame.K_LEFT]:
-            glTranslatef(-speed, 0, 0)
+            obj.move(-speed, 0, 0)
         if keys[pygame.K_t]:
-            glTranslatef(0, 0, -speed)
+            obj.move(0, 0, -speed)
         if keys[pygame.K_g]:
-            glTranslatef(0, 0, speed)
+            obj.move(0, 0, speed)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         obj.draw()
